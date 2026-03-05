@@ -1,0 +1,158 @@
+# Inspo
+
+- https://github.com/openai/codex
+Add web version through search using the llms.txt (https://developers.openai.com/codex/llms.txt). I think here we should focus on understanding how we can use non-interactive mode, if they manage any sort of worktrees, how they use skills and multiagents, etc.
+
+- https://github.com/anthropics/claude-code
+Add web version through search using the llms.txt (https://code.claude.com/docs/llms.txt). I think here we should focus on understanding how we can use non-interactive mode (check if usable with plan or requires API key), if they manage any sort of worktrees, how they use skills and multiagents, etc. Create another file exclusively for the skills that might be useful for our project and needs.
+
+Some things we need to check on every agent orchestrator project:
+1. Access to models/providers (if API, OAUTH with suscriptions, etc)
+2. API structure or way to call models (OpenAI API style, Anthropic, etc). This is important considering different features like interleaved thinking with Claude.
+3. Security and Isolation (Worktrees, etc.).
+4. Types of predefined agents and orchestration between them (like use of some Protocol).
+5. Noticeable features that have similarities with the ones we desire.
+6. Interesting features not related but that could improve the system overall.
+7. Particular sections or topics highlighted for each project by us to analyze specifically, if any.
+8. Limitations 
+9. Maintenance, good practices in the project, etc.
+
+The "template" or guide for the final output should be flexible enough so that it can include any other relevant information not present in the list. 
+
+- https://github.com/badlogic/pi-mono | AI agent toolkit: coding agent CLI, unified LLM API, TUI & web UI libraries, Slack bot, vLLM pods. Most versatile, with the idea of code that builds itself (see agent-stuff repo for examples of extensions and skills that can be implemented). 
+    This is the whole repo, but we will focus on packages/coding-agent. I really like the philosophy (check Pi-blog.md to read the , I think it's something that will evolve as models evolve. It's important to understand the different ways it has to expand itself and if it's possible to implement all our desired features or how can we expand it preserving the core ideas and philosophy. Here, I know we start in yolo mode so we'd need to add the security part too. I think this is a good base for something that can even self evolve.
+
+- https://github.com/can1357/oh-my-pi | AI Coding agent for the terminal — hash-anchored edits, optimized tool harness, LSP, Python, browser, subagents, and more (Based on PI Agent).
+    This one is basically Pi but already modified with a lot more features (for example I like the browser tool). My main concern or thing to analyze is if all these changes preserve the philosophy of Pi, or if there's a better way to implement. Also I know there are things that we'd need to modify as there are things that are done differently. We need to analyze what matches what we want and what's different.
+
+- https://github.com/agusx1211/adaf | adaf is a meta-orchestrator for AI coding agents. It manages plans, issues, wiki, session logs, and deep session recordings outside the target repository, so multiple AI agents can collaborate on a codebase via structured relay handoffs.
+    From what I saw quickly, the most interesting part is that it implements some similar loops as well as some agent profiles/roles. Look at those and describe how are they implemented.
+
+- https://github.com/NousResearch/hermes-agent | The fully open-source AI agent that grows with you. Install it on a machine, give it your messaging accounts, and it becomes a persistent personal agent — learning your projects, building its own skills, running tasks on a schedule, and reaching you wherever you are. An autonomous agent that lives on your server, remembers what it learns, and gets more capable the longer it runs.
+    There are a lot of features that I like about this project, specially I want you to explore features that make unique this agent, one that caughts my attention is that as I understood, it's built to help running RL and SFT experiments through their framework that connects to Tinker.
+
+- https://github.com/Git-on-my-level/codex-autorunner | CAR provides a set of low-opinion agent coordination tools for you to run long complex implementations using the agents you already love. CAR is not a coding agent, it's a meta-harness for coding agents.
+    What I like about this one is the simple ticket system. I want you to dig into this and explain advantages and possible limitations, and think about how we could incorporate it into our system.
+
+- https://github.com/openclaw/openclaw | OpenClaw is a personal AI assistant you run on your own devices. It answers you on the channels you already use (WhatsApp, Telegram, Slack, Discord, Google Chat, Signal, iMessage, Microsoft Teams, WebChat), plus extension channels like BlueBubbles, Matrix, Zalo, and Zalo Personal. It can speak and listen on macOS/iOS/Android, and can render a live Canvas you control. The Gateway is just the control plane — the product is the assistant (Based on pi-agent).
+    This is the most famous AI assistant, it has a loooot of features, we don't need them immediately but it's worth looking at them to sort them in some way based on priority and usefulness. It's also known that the codebase is huge, so I wouldn't take it as a base directly for the project.
+
+- https://github.com/njbrake/agent-of-empires | A terminal session manager for AI coding agents on Linux and macOS. Built on tmux, written in Rust. Run multiple AI agents in parallel across different branches of your codebase, each in its own isolated session with optional Docker sandboxing. 
+    I think this is an example of orchestratos based on tmux sessions to call each CLI, simple but somewhat effective. The possible limitations I see rn are that maybe it could be more difficult to trace everything and logging, but it's important to think deeply on the advantages and disadvantages this implementation has.
+
+- https://github.com/mitsuhiko/agent-stuff/tree/main | This repository contains skills and extensions that I use in some form with projects. Note that I usually fine-tune these for projects so they might not work without modification for you.
+    The idea with this repo is to check examples of skills and extensions that might be useful to create our workflows and the rest of the features we need. The idea is to select and analyze everything that could be useful for our purposes.
+
+- https://github.com/rawwerks/ypi| ypi — a recursive coding agent built on Pi, based on RLMs.
+    Install it and launch to analyze the rest of the repos.
+
+
+
+
+
+1. ZeroClaw (Rust, zeroclaw-labs/zeroclaw)
+Advantages: Tiny static binary (~3–9 MB), <5 MB RAM, <10 ms startup (99% lighter/faster than OpenClaw), Rust memory safety + secure-by-default (sandboxing, allowlists, scoped FS), swappable traits for models/tools/channels/memory. Runs perfectly on $10 hardware.
+Limitations: Younger ecosystem with fewer pre-built skills/UI extras (e.g., live Canvas) and requires Rust comfort for deep tweaks.
+
+2. NanoClaw (qwibitai/nanoclaw or gavrielc variant)
+Advantages: True OS-level container isolation (Docker/Apple Containers per agent/session), tiny auditable codebase (handful of files), explicit mounts only → drastically lower attack surface than OpenClaw’s single-process model. Excellent for secure role separation.
+Limitations: Minor container overhead; more minimalist core (adds channels via skills, less “batteries-included” richness).
+
+3. NullClaw (Zig – https://github.com/nullclaw/nullclaw) ← Added from your link (searched & verified)
+Advantages: 678 KB static binary, ~1 MB RAM, <8 ms startup (beats everything in benchmarks), 18+ channels, multi-layer sandboxing (Landlock/Firejail/Bubblewrap/Docker auto), hybrid vector+FTS5 memory (perfect for logging/RL data), encrypted secrets, voice, skills, explicit OpenClaw config & memory migration, hardware support. Fully autonomous 24/7 on $5 hardware.
+Limitations vs OpenClaw: Very early (pre-1.0), requires Zig 0.15.2 to build, slightly less “batteries-included” UX polish.
+
+# Must check for our own skills: 
+- https://github.com/mitsuhiko/agent-stuff/tree/main | This repository contains skills and extensions that I use in some form with projects. Note that I usually fine-tune these for projects so they might not work without modification for you.
+    The idea with this repo is to check examples of skills and extensions that might be useful to create our workflows and the rest of the features we need. The idea is to select and analyze everything that could be useful for our purposes.
+- https://agentskills.io/llms.txt
+- https://github.com/anthropics/skills | Public repository for Agent Skills.
+
+# Interesting tools to explore (soon)
+- https://github.com/steipete/mcporter/ | Call MCPs via TypeScript, masquerading as simple TypeScript API. Or package them as cli.
+    I think the cli package feature can be relevant for using MCPs without context bloating.
+- https://github.com/imbue-ai/vet | Find issues worth your attention.
+    It only works with API keys, that's a disadvantage, but we could analyze and understand how it works to implement by ourselves.
+- https://github.com/imbue-ai/darwinian_evolver/ | Framework for evolving code and prompts inspired by Darwinian evolution. Darwinian-evolver maintains a population of solutions (organisms). In each iteration, it selects promising parents from the population, creates new variations of them (mutation), and scores their performance (evaluation). The best solutions survive and reproduce, gradually evolving toward an ever improving solution.
+
+#Potential Useful Tools
+- https://github.com/0xSero/ai-data-extraction (extract all your personal data history from cursor, codex, claude-code, windsurf, and trae)
+- https://github.com/photon-hq/buildspace | BuildSpace packages battle-tested, AI-powered CI/CD building blocks, like generating release notes, bumping versions, publishing, plus ready-made workflows built from those blocks, so teams can either compose custom automations or plug in the prebuilt recipes with only a few inputs.
+- https://docs.morphllm.com/llms.txt
+
+# Discarded for now to reduce the number of projects.
+- https://github.com/banteg/takopi/tree/master?tab=readme-ov-file | telegram bridge for codex, claude code, opencode, pi. manage multiple projects and worktrees, stream progress, and resume sessions anywhere.
+- https://github.com/nbardy/oomp | Web dashboard for your CLI coding agents — Claude Code, Codex, OpenCode, Gemini CLI
+- https://github.com/ComposioHQ/agent-orchestrator | Agent Orchestrator manages fleets of AI coding agents working in parallel on your codebase. Each agent gets its own git worktree, its own branch, and its own PR. When CI fails, the agent fixes it. When reviewers leave comments, the agent addresses them. You only get pulled in when human judgment is needed. Agent-agnostic (Claude Code, Codex, Aider) · Runtime-agnostic (tmux, Docker) · Tracker-agnostic (GitHub, Linear)
+
+-----------
+
+- We need to check search access (security reasons - having agents that have access to bash and internet at the same time can be risky); we need to verify the security measures they have (this can be related to knowing how they handle multiple agents for coding) regarding. Ideally, the agent should only have access to the folder where it's called, but it should also be flexible and allow some YOLO mode. At least at the beginning or for coding purposes in general we'll create a system where the web search function will only be used by an agent that only has access to that tool and another for writing the answer. The idea is to separate roles to prevent potential prompt injection attacks. The system itself should raise a warning when an agent tries to use a tool not defined for them to recheck and flag the potential attack.
+
+- It should log in a clear way all the conversations to save them as data for future RL. It should save all the relevant information for that, and in case there's something wrong it should record the different versions that improve the solution; even the plans are data useful for future training. 
+
+- Important to consider that one project may be part on some of the structure; a project can be used as the base, we can use it to take inspiration to add certain features to our own implementation, or even as a tool part of the system directly. The idea is to take advantadge of what's already been built to take the best pieces.
+
+- Agents should be able to raise a question to the one that assigned a task (other agent/user). We should also explore the review agent deciding to start a new session of itself but with refined prompt to improve results, or to solve it by itself, or to span a new agent with a better model due to complexity. 
+
+- Ideally, tasks must be decomposed enough so that the latest agent in the hierarchy (the cell) has all the information and details necessary to complete the task (regarding programming). Each task should follow the rules, be documented properly and with all the corresponding tests passed, old and new ones. If a task fails in something after reviewed, the reviewer (or maybe another agent?) should analyze the severity of the failures to determine if it should send the task back to the same model with refined context to improve or to a better model if the errors are considerable.
+
+
+- Objective: create my own harness and orchestrator of a swarm of agents, using the different CLIs available (Codex, Claude Code with different models, Kimi Cli, etc). 
+
+{FOR MORE CONTEXT: This will be the base to create something bigger like OpenClaw but tailored for my needs. Some early thoughts on that:
+	- It should be able to receive messages, images, whatever; connect this to obsidian or something like that to create like a second brain where I can feed ideas, things to remember, plans, etc. and this would allow me to visualize all of this better on graphs or things like that, so that I can also link "unrelated" topics to create new relations.
+	- It should be running 24/7 (or while it hasn't reached token limit, if that's the case, restart asap) working on different projects depending the priority assigned to each project.
+	- Important decissions should be consulted with me, with periodic reminders based on the urgency related and how much time has been lost waiting for feedback. Even the priority of things should be reviewed at least once a day.
+	- There should be a way to recommend topics of interest to approach or learn about. The idea is that the assistant itself should hand me topics to read or watch (papers, videos, etc).
+	- I can also upload for example written notes that I've taken about certain topics I've read or watched, I'd like those notes to be transcribed by a local OCR to then classify those notes using obsidian or the way I'm organizing information. It may be nice to first know what kind of image is, like it they're notes or any other category, to only send the corresponding to the local model.
+	- A mode for "important information" cyphered in some way to authorize access to certain information or things like that.
+	- The objective is an assistant community of agents that takes my ideas from the very beginning to a process of refining versions of products/research/etc created.
+	- Many other features
+}
+
+Now the true description of the orchestrator for programming.
+It will be based on the use of: RLMs (Recursive Language Models), Ralph method (loops), CLI's instances and their own implementation (if any) of multiple agents, subagents, or whatever it's called. 
+RLMs should be used for tasks that require high context, we should be able to configure max depth/width and all the other parameters that we could configure to do some experiments on the ideal set (another future project would be to automate these values based on the task). 
+I visualize something like an oracle or orchestrator (Not sure if a single model or some sort of multiple opinions/perspectives, it's something to experiment too) in charge of many agents at the same time. I'm hesitant how to implement RLM, is if for example as a skill for each CLI, or something more agnostic for any of them, like if something external or internal (or both?); this is linked to the question of if it would be interesting to use it as a unit/node of the system we will create. I'm thinking about the structure of the system, I'd like to be as descentralized as possible but I think with what we have currently we should prioritize using each model the way it performs best (for example Claude for frontend design, even it can use the claude for Chrome tool to test its own frontend; for backend it's better codex; kimi is general but maybe would be helpful to delegate tasks that are more granular and with very clear outcomes; we should also consider a way to use grok to search information or find stuff, it's great for that, we should use 5.3-codex-xhigh or 5.2 pro (if available), even Opus 4.6 for the iteration of the planning process, when this process is done, it should await for a check by the user to decide if it's okay or if there's something missing or to fix and iterate again; this plan should be done considering that it's for other agents to execute. This system will be based on iterating, either in cycles with the user feedback or for example in code optimizations loops.
+It's important to define the workflows to follow inside our program. I'm not sure if considering this approach of flows and roles it would be somewhat useful to think with the philosophy used in the DSPY library or to incorporate some of these ideas. I mention this too because I saw that their RLM implementation obtains better results than other ones or the standard based on some experiments made (see the blog on inspo links). We need to think deeply about this, after all the RLM idea comes from the same authors as DSPY, so we need to find ways to exploit their approach.
+Back to the workflows, I visualize workflows based on planning, implementing, testing, reviewing logic and implementation, correct and repeat, applied to any level of the hierarchy. 
+There will be more workflows according to the type of projects, and the state of it. We'll start with the basic workflow for programming a specific project, but  then we will expand to explore different ideas, do research, and try many different things.
+For big or important reviews I think it should  be better to have multiple revisions from different models and a final one of consensus made by the best model considering the other models' reviews. We need to play with the number of models used for this and which ones contribute the most. 
+I want to be able to test different types of organizations easily based on structure/hierarchy with different models. 
+I want to even be able to use free models through Openrouter and Claude Code to test if it's possible to reduce costs delegating super granular tasks, very specific ones.
+
+I see this as the foundation blocks to something that will escalate in terms of agents, roles, etc. to become something like a personal company. But for that, we first need to create the building blocks which are the coders. 
+I envision
+
+All the code we aim to create for this and any other model (I think these are rules we should add to "global" AGENTS.md/CLAUDE.md/etc.) should be following principles of Functionality>Optimization>Modularity/Granularity>Simplification; but all of them are important!!! 
+I'd like the code to be easily reusable from fundamental units to composed parts of it. When exploring in the planning phase, it's important to check for similar implementations in case there's already something that could be used, reused, taken as reference.
+In the planning phase, we should include this exploration step.
+The code must be documented completely, always updated, we need to define clear docs for both humans and agents. And tests must always pass and be added accordingly.
+
+We need to investigate how git worktrees or any other strategy use each cli and model (we should add a native one for future models with API or the pi agent) to corroborate it won't generate conflicts and it will work as expected.
+
+We need to create a system to monitorize everything, this data will be valuable in the future to personalize models and do RL for personalized tasks. We need to monitorize the performance of everything, like the tokens spent, times where we reached the limit in an account, the files reviewed in the session, the modifications done, logs of  the last tests performed on the code, the modifications I make, the final state of a correct solution/implementation with everything requested accepted, the same for the plans and any other kind of information that can be used to train with RL. We should also trace when tasks were not correctly coordinated and were prone to errors due to crosses in functions/delegations/etc. 
+We should also have different metrics according to the model, for example having the type of task and if it was able to complete them, to evaluate continously and adjust the best function for each model.
+
+We should consider for now a way to communicate between concurrent agents on the same project, also a memory between async agents, like a log of architectural decisions made, a log for questions that need clarification (maybe it would be incredible for the model to have a way to get back to the upper management (another agent) in case there's something unclear about a task).
+There should be a system that makes things of creating/stopping/talking to an agent more dynamic. Something like a trigger that when it's needed either for a review of the work or a question,maybe this could be triggered by editing a markdown file specifically for that in the project folder?
+We should treat each agent managing essential information to identify and have a specific description of what's its purpose for each "clone" of the same agent (maybe we instantiate the same agent for two simultaneous operations, should this be even possible?)
+I think the easiest way for now for communications are the markdown files, inspired in how its done in OpenClaw but I want to expand it. I also want to test some interesting things like an email between the different agents; agents should have random "names" for now but trazable, only the user should now which model is each one. 
+
+
+In the future I want to convert this in a platform for interactions between agents, giving each one a personality and tracing the evolution based on their interactions, to create experiments. This should evolve as a community where they help me improve, I help you as a system, and we grow together.
+
+We should also create or have some sort of log where the reviewers of code give "constructive criticism" to the agents or subagents in charge so that we continue enforcing the best way to do things and avoid common mistakes for the current and future projects.
+We need to accumulate this knowledge. Information is key here.
+
+Firstly, It'll be developed for Linux. I'd like to be made an exhaustive analysis of which language to use, evaluating advantages and disadvantages for at least three languages. OpenClaw is written in TS for example, but not sure if that's the best option. 
+It's important to consider that the next projects we will build using this new tool we are creating, they can be in any language and we will explore whatever fits best for our purposes.
+The principles, rules, and processes should guarantee that the code generated by our agents will be maintanable through time even if the codebase grows.
+
+We need to create a standard of communications through md files in the projects.
+
+Inspo Sources:
+https://www.symbolica.ai/blog/arcgentica
+https://github.com/openclaw/openclaw
+https://raw.works/recursive-language-models-as-memory-systems/
