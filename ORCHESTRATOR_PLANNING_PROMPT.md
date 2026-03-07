@@ -62,7 +62,7 @@ The language will follow from the base project choice, but the analysis should e
 - Cross-platform considerations (Linux-first, but future portability).
 - **Agent comprehensibility** — can current LLMs reason well about this language and its ecosystem? Languages with strong representation in training data, stable APIs, and comprehensive documentation are an asset. This is a first-class selection criterion since agents will build and maintain the system.
 
-**Languages represented in reference projects**: Rust (Agent of Empires, ZeroClaw), TypeScript (OpenClaw, pi-mono), Go (PicoClaw), Python (Nanobot, ypi). The base project recommendation must justify why its language is the best fit.
+**Languages represented in reference projects**: Rust (Agent of Empires, ZeroClaw), TypeScript (OpenClaw, pi-mono, oh-my-pi), Python (ypi, hermes-agent), Zig (NullClaw), Elixir (Symphony reference implementation), Go (codex-autorunner). The base project recommendation must justify why its language is the best fit.
 
 ### 2.2 System Structure
 Evaluate each candidate base project's architecture against:
@@ -483,27 +483,37 @@ During the planning phase for **any project that will be built using this orches
 
 ### 7.2 Reference Projects & Inspiration Sources (Specific to This Project)
 
-#### Primary Inspiration
+#### SOTA Agent Harnesses
+The state-of-the-art CLI tools for AI-assisted coding. While still early in multi-agent management, they serve as a solid foundation or starting point.
+
+| Tool | Key Characteristic |
+|------|-------------------|
+| Claude Code | Anthropic's official CLI for Claude — interactive and non-interactive modes, worktree support, MCP integration |
+| Codex | OpenAI's CLI agent — non-interactive mode, sandboxed execution, multi-file editing |
+
+#### Agent Orchestrators & Harnesses
+Systems for coordinating and managing AI coding agents at scale.
+
 | Project | URL | Key Takeaway |
 |---------|-----|--------------|
-| Agent of Empires | https://github.com/njbrake/agent-of-empires | Rust TUI, tmux-based, multi-CLI support, worktree isolation, Docker sandboxing |
-| oomp | https://github.com/nbardy/oomp | Web dashboard for CLI coding agents |
 | pi-mono | https://github.com/badlogic/pi-mono | AI agent toolkit: CLI, unified LLM API, TUI & web UI, code-that-builds-itself philosophy |
-| agent-stuff | https://github.com/mitsuhiko/agent-stuff | Skills and extensions for pi-based projects (fine-tuned per project) |
-| OpenClaw | https://github.com/openclaw/openclaw | Personal AI assistant, multi-channel, persistent, Canvas, Gateway architecture |
-| ypi | https://github.com/rawwerks/ypi | Recursive coding agent built on Pi, based on RLMs |
-| hermes-agent | https://github.com/NousResearch/hermes-agent | Persistent personal agent, learns, builds skills, scheduled tasks |
-| Agent Orchestrator (Composio) | https://github.com/ComposioHQ/agent-orchestrator | Agent-agnostic orchestrator, worktrees, CI fix loops, tracker-agnostic |
+| oh-my-pi | https://github.com/can1357/oh-my-pi | Fork of pi-mono — hash-anchored edits, optimized tool harness, LSP integration, persistent Python kernels, subagents, multi-agent orchestration |
 | adaf | https://github.com/agusx1211/adaf | Meta-orchestrator, plans/issues/wiki/session recordings outside repo, relay handoffs |
-| takopi | https://github.com/banteg/takopi | Telegram bridge for multiple coding CLIs, worktree management, session streaming |
+| codex-autorunner | https://github.com/Git-on-my-level/codex-autorunner | Ticket-based coordination framework for long-running agent tasks — tickets as control plane, multi-model support, Web UI + CLI + chat interfaces (Telegram/Discord) |
+| Agent of Empires | https://github.com/njbrake/agent-of-empires | Rust TUI, tmux-based, multi-CLI support, worktree isolation, Docker sandboxing |
+| hermes-agent | https://github.com/NousResearch/hermes-agent | Persistent personal agent, learns, builds skills, scheduled tasks |
+| ypi | https://github.com/rawwerks/ypi | Recursive coding agent built on Pi, based on RLMs |
+| symphony | https://github.com/openai/symphony/ | Orchestration system turning project management tasks into autonomous agent runs — CI-based proof of work, automated PR landing |
 
-#### OpenClaw Variants (Study for Design Tradeoffs)
-| Variant | Key Characteristic |
-|---------|-------------------|
-| ZeroClaw (Rust) | Tiny binary, <5MB RAM, <10ms startup, sandboxing, swappable traits |
-| NanoClaw | OS-level container isolation per agent, minimal attack surface |
-| Nanobot (Python) | Ultra-minimal ~4000 lines, clean/readable, multi-channel + MCP |
-| PicoClaw (Go) | Extreme edge focus, <10MB RAM, runs on RPi Zero |
+#### OpenClaw & Variants (AI Assistant)
+Personal AI assistant ecosystem — multi-channel, persistent, extensible.
+
+| Variant | URL | Key Characteristic |
+|---------|-----|-------------------|
+| OpenClaw | https://github.com/openclaw/openclaw | Personal AI assistant, multi-channel, persistent, Canvas, Gateway architecture |
+| ZeroClaw | *(Rust variant)* | Tiny binary, <5MB RAM, <10ms startup, sandboxing, swappable traits |
+| NanoClaw | *(container variant)* | OS-level container isolation per agent, minimal attack surface |
+| NullClaw | https://github.com/nullclaw/nullclaw | Minimal AI assistant in Zig — 678KB binary, 23+ LLM providers, 18 messaging channels, hybrid vector+keyword memory, sandboxing, encryption, zero dependencies |
 
 #### Research / Theory
 | Source | URL | Relevance |
@@ -512,11 +522,31 @@ During the planning phase for **any project that will be built using this orches
 | RLMs as Memory Systems | https://raw.works/recursive-language-models-as-memory-systems/ | Core RLM theory and implementation |
 | DSPy | (library + blog) | Programmatic prompt optimization, RLM implementation with superior benchmark results |
 
-#### Useful Tools to Potentially Integrate
+#### Must Check for Our Own Skills
+Resources to study for building our workflow skills and extensions.
+
+| Resource | URL | Notes |
+|----------|-----|-------|
+| agent-stuff | https://github.com/mitsuhiko/agent-stuff/tree/main | Skills and extensions fine-tuned per project — study for workflow and feature patterns we can adapt |
+| Agent Skills Directory | https://agentskills.io/llms.txt | Community directory of agent skills |
+| Anthropic Skills | https://github.com/anthropics/skills | Official public repository for Agent Skills |
+
+#### Interesting Tools to Explore (Soon)
+Tools worth investigating in the near term for potential integration or reimplementation.
+
+| Tool | URL | Notes |
+|------|-----|-------|
+| mcporter | https://github.com/steipete/mcporter/ | Call MCPs via TypeScript or package as CLI — relevant for using MCPs without context bloating |
+| vet | https://github.com/imbue-ai/vet | Find issues worth attention — API-key-only, but analyze for potential reimplementation |
+| darwinian_evolver | https://github.com/imbue-ai/darwinian_evolver/ | Framework for evolving code and prompts via Darwinian evolution — population-based optimization |
+
+#### Potential Useful Tools
+
 | Tool | URL | Use Case |
 |------|-----|----------|
 | ai-data-extraction | https://github.com/0xSero/ai-data-extraction | Extract personal data/history from Cursor, Codex, Claude Code, Windsurf, Trae |
 | BuildSpace | https://github.com/photon-hq/buildspace | AI-powered CI/CD blocks (release notes, versioning, publishing) |
+| Morph LLM Docs | https://docs.morphllm.com/llms.txt | LLM documentation and integration reference |
 
 #### Commercial/Closed Tools (Study for Feature Ideas)
 - **Agentastic.dev**: Native macOS multi-agent IDE, Ghostty terminals, kanban labels, diff viewer, multi-agent code review.

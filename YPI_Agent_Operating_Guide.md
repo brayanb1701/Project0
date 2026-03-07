@@ -1,223 +1,358 @@
-# YPI Agent CLI Guide
+# YPI Agent Operating Guide
 
-This document teaches an agent how to use `ypi` from bash as an execution tool.
+This document explains how to use `ypi` as a CLI tool.
 
-## 1) What YPI Is
+Scope:
 
-`ypi` is a recursive wrapper around the Pi coding agent CLI (`pi`).
+- This is for the agent or operator that invokes `ypi`.
+- This is not a guide to modifying `ypi` internals.
+- Non-interactive usage is the primary workflow.
+- Interactive usage is a secondary option, preferably through `tmux`.
 
-- You invoke `ypi` as the root agent process.
-- `ypi` injects recursion support (`rlm_query`) into the runtime.
-- Child calls are created by running `rlm_query` from bash.
-- Each child is another Pi run with the same recursive setup, bounded by guardrails.
+## 1. What `ypi` Is
 
-Use `ypi` when a task is too large for one context window and benefits from decomposition.
+`ypi` is a CLI wrapper around Pi that starts Pi with a recursive system prompt and the extra runtime needed for recursive work.
 
-## 2) Runtime Components
-
-When you run `ypi`, these components matter:
-
-- `ypi`: root launcher command.
-- `rlm_query`: recursive sub-agent call command.
-- `rlm_cost`: cumulative cost reporting for the current recursive tree.
-- `rlm_sessions`: inspect session logs for current project/trace.
-
-Key environment variables used by ypi runtime:
-
-- `RLM_MAX_DEPTH`: recursion depth limit.
-- `RLM_MAX_CALLS`: global recursive call cap.
-- `RLM_TIMEOUT`: wall clock limit for the tree.
-- `RLM_BUDGET`: max spend for the tree.
-- `RLM_CHILD_MODEL` / `RLM_CHILD_PROVIDER`: cheaper routing for children.
-- `RLM_JJ`: workspace isolation toggle (`1` default, `0` disable).
-- `RLM_SHARED_SESSIONS`: cross-session visibility toggle.
-- `PI_TRACE_FILE`: optional trace log path.
-
-## 3) How It Works
-
-### Root invocation
-
-`ypi` starts Pi with a system prompt specialized for recursive operation.
-
-### Child invocation
-
-`rlm_query "..."` spawns a child Pi process.
-
-- Child inherits recursion context.
-- Child receives bounded runtime constraints.
-- If `jj` is available in a `jj` repo, child can run in isolated workspace.
-
-### Recursion boundary
-
-Recursion stops at `RLM_MAX_DEPTH`.
-
-- At depth boundary, additional recursion is blocked.
-- Guardrails (calls, timeout, budget) can stop execution earlier.
-
-### Session and trace linkage
-
-All runs in the same tree share trace/session metadata.
-
-- Use `rlm_sessions --trace` to inspect this tree.
-- Use `rlm_cost --json` to check cumulative usage.
-
-## 4) When to Use YPI
-
-Use ypi if one or more apply:
-
-- Task spans many files or subsystems.
-- You need parallel investigation.
-- You need iterative decomposition with independent sub-results.
-
-Do not use heavy recursion for tiny, local edits.
-
-## 5) Invocation Patterns
-
-### A) Interactive root session
+As a user of the tool, the command you normally invoke is:
 
 ```bash
 ypi
 ```
 
-### B) One-shot root task
+or, more commonly for automation and agent use:
 
 ```bash
-ypi "Summarize architecture and identify risky modules"
+ypi "your task here"
 ```
 
-### C) Provider/model override at root
+## 2. Primary Way To Use It
+
+The default mental model should be:
 
 ```bash
-ypi --provider anthropic --model claude-sonnet-4-5-20250929 "Map TODO hotspots"
+ypi "task"
 ```
 
-### D) Child call from inside an active ypi run (sync)
-
-```bash
-rlm_query "Audit auth module and return top 5 risks with file:line"
-```
-
-### E) Child call with piped context
-
-```bash
-sed -n '200,340p' src/auth/service.ts | rlm_query "Find defects and propose minimal patch"
-```
-
-### F) Parallel child fan-out (async)
-
-```bash
-J1=$(rlm_query --async "Analyze src/auth for error handling bugs")
-J2=$(rlm_query --async "Analyze src/billing for retry/idempotency bugs")
-J3=$(rlm_query --async "Analyze src/api for input validation gaps")
-```
-
-## 6) Recommended Delegation Contract
-
-When prompting child calls, always include:
-
-- Objective: one bounded outcome.
-- Scope: exact files/paths.
-- Constraints: what not to change.
-- Output format: strict shape (diff, checklist, JSON, etc).
-- Validation: exact checks to run.
+This is the primary workflow because it is the clearest, easiest to automate, and the best fit for agents.
 
 Example:
 
 ```bash
-rlm_query "Objective: patch null handling in src/api/user.ts only. Constraints: no refactor, no rename. Output: unified diff only. Validation: npm test -- user-api"
+ypi "Analyze this repository and summarize the architecture"
 ```
 
-## 7) Guardrail Baseline
+Use this style when:
 
-Set before non-trivial runs:
+- you want a one-shot task
+- you are invoking `ypi` from another tool or script
+- you want reproducible command lines
+- you want to avoid mixing operator chat behavior with the actual task request
+
+## 3. Installation
+
+### npm
+
+```bash
+npm install -g ypi
+```
+
+### Run without installing
+
+```bash
+npx ypi "What does this repo do?"
+bunx ypi "What does this repo do?"
+```
+
+### Install script
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/rawwerks/ypi/master/install.sh | bash
+```
+
+### Manual checkout
+
+```bash
+git clone https://github.com/rawwerks/ypi.git
+cd ypi
+git submodule update --init --depth 1
+export PATH="$PWD:$PATH"
+```
+
+## 4. Prerequisites
+
+Required:
+
+- Node.js 18+
+- Pi available through the `@mariozechner/pi-coding-agent` dependency
+- provider credentials configured for the model you want to use
+
+Recommended:
+
+- `jj` for isolated child workspaces
+- `tmux` if you want long-lived interactive sessions
+
+## 5. Basic Command Patterns
+
+### Non-interactive one-shot
+
+```bash
+ypi "Refactor the error handling in this repo"
+```
+
+### Interactive session
+
+```bash
+ypi
+```
+
+### Provider and model override
+
+```bash
+ypi --provider anthropic --model claude-sonnet-4-5-20250929 "Map the TODO hotspots in this repo"
+```
+
+### Add extra instructions without replacing the built-in recursive prompt
+
+```bash
+ypi --append-system-prompt "Prefer concise answers and always cite file paths" "Audit the auth flow"
+```
+
+### Replace the system prompt entirely
+
+```bash
+ypi --system-prompt ./custom-prompt.md "Analyze the build pipeline"
+```
+
+Use `--system-prompt` only if you intentionally want to override `ypi`'s recursive behavior.
+
+## 6. Recommended CLI Usage Pattern
+
+Use this sequence by default:
+
+1. Enter the target repository directory.
+2. Invoke `ypi "task"`.
+3. Pass provider or model flags only when you need an override.
+4. Use environment variables for recursion guardrails.
+5. Reserve interactive mode for cases where you deliberately want a persistent shell.
+
+Good default:
+
+```bash
+cd /path/to/repo
+ypi "Understand the billing subsystem and identify concrete reliability risks"
+```
+
+## 7. CLI Arguments
+
+`ypi` passes most arguments through to Pi. In practice, you should think of the CLI surface like this:
+
+### Common pass-through arguments
+
+- `--provider <name>`
+- `--model <name>`
+- prompt as the final positional argument
+
+Example:
+
+```bash
+ypi --provider anthropic --model claude-sonnet-4-5-20250929 "Explain the test architecture"
+```
+
+### `ypi`-specific handling
+
+#### `--append-system-prompt <text>`
+
+Appends additional system instructions to the recursive prompt that `ypi` builds.
+
+```bash
+ypi --append-system-prompt "Prefer plans before edits" "Review the deployment scripts"
+```
+
+#### `--system-prompt <file-or-text>`
+
+Overrides the built-in `ypi` system prompt.
+
+If the argument is a readable file, `ypi` uses that file's contents. Otherwise it uses the literal string.
+
+```bash
+ypi --system-prompt ./my-prompt.md "Inspect the API layer"
+```
+
+#### `--quiet` or `-q`
+
+Suppresses the warning that appears when you override the system prompt.
+
+```bash
+ypi -q --system-prompt ./my-prompt.md "Inspect the API layer"
+```
+
+## 8. Environment Variables
+
+These are the main runtime controls exposed by `ypi`.
+
+### Core recursion controls
+
+- `RLM_MAX_DEPTH`: maximum recursion depth. Default: `3`
+- `RLM_MAX_CALLS`: maximum total recursive calls
+- `RLM_TIMEOUT`: wall-clock limit in seconds for the whole recursive tree
+- `RLM_BUDGET`: maximum spend for the whole recursive tree
+
+Example:
 
 ```bash
 export RLM_MAX_DEPTH=3
 export RLM_MAX_CALLS=20
 export RLM_TIMEOUT=1800
 export RLM_BUDGET=1.50
-export RLM_CHILD_MODEL="<cheaper-child-model>"
+ypi "Analyze the codebase and propose a minimal refactor plan"
 ```
 
-Optional observability:
+### Model routing
+
+- `RLM_PROVIDER`: provider for recursive calls
+- `RLM_MODEL`: model for recursive calls
+- `RLM_CHILD_PROVIDER`: provider override for child calls
+- `RLM_CHILD_MODEL`: cheaper model override for child calls
+
+Example:
 
 ```bash
-export PI_TRACE_FILE=/tmp/ypi-trace.log
+export RLM_CHILD_MODEL=haiku
+ypi --provider anthropic --model claude-sonnet-4-5-20250929 "Review the repo for architectural risks"
 ```
 
-## 8) Operational Workflow
+### Workspace and visibility
 
-1. Start root task with `ypi`.
-2. Size/scope with fast shell commands (`rg`, `find`, `wc`, targeted `sed`).
-3. Decide direct vs delegated work.
-4. Delegate independent chunks with `rlm_query --async`.
-5. Validate child outputs before integration.
-6. Monitor `rlm_cost --json` and `rlm_sessions --trace`.
-7. Summarize integrated result and remaining risks.
+- `RLM_JJ=0`: disable `jj` workspace isolation
+- `RLM_SHARED_SESSIONS=0`: disable shared session visibility
 
-## 9) Observability and Inspection
+### Output and tracing
 
-Cost:
+- `RLM_JSON=0`: disable JSON mode and cost tracking for recursive calls
+- `PI_TRACE_FILE=/tmp/ypi-trace.log`: write trace logs to a file
+
+### Extensions
+
+- `RLM_EXTENSIONS=0`: disable Pi extensions
+- `RLM_CHILD_EXTENSIONS=0`: disable extensions for child calls only
+
+## 9. Non-Interactive Examples
+
+### Repository summary
 
 ```bash
-rlm_cost
-rlm_cost --json
+ypi "Summarize this repository in one paragraph"
 ```
 
-Sessions:
+### Targeted architectural review
 
 ```bash
-rlm_sessions
-rlm_sessions --trace
-rlm_sessions read --last
-rlm_sessions grep "auth"
+ypi "Inspect the authentication and billing subsystems. Return the top 5 risks with concrete evidence."
 ```
 
-## 10) Failure Handling
+### Provider/model selection
 
-`rlm_query` fails with depth/calls/timeout/budget issues:
+```bash
+ypi --provider anthropic --model claude-sonnet-4-5-20250929 "Find the main test gaps in this repo"
+```
 
-- Reduce delegation fan-out.
-- Tighten scope and rerun smaller chunks.
-- Increase guardrail only if necessary and justified.
+### Use extra instructions
 
-`pi`/model auth failures:
+```bash
+ypi --append-system-prompt "Return findings first, summary second" "Review the webhook handling path"
+```
 
-- Verify provider credentials are set.
-- Verify provider/model names are valid.
+### Run with guardrails
 
-No `jj` isolation:
+```bash
+RLM_MAX_DEPTH=3 RLM_MAX_CALLS=15 RLM_TIMEOUT=1200 ypi "Audit the deployment scripts and list operational risks"
+```
 
-- Ensure `jj` is installed.
-- Ensure current repo is a `jj` workspace.
-- Or explicitly continue without isolation (`RLM_JJ=0`).
+## 10. Interactive Mode Is Secondary
 
-## 11) Anti-Patterns
+You can run `ypi` with no prompt to start an interactive root session:
 
-Avoid:
+```bash
+ypi
+```
 
-- Vague child prompts with no output contract.
-- Full-file ingestion when targeted extraction is enough.
-- Large synchronous recursion loops when `--async` is suitable.
-- Accepting child output without validation.
-- Running unbounded recursion without guardrails.
+Use this only when you actually want a persistent conversation loop.
 
-## 12) Minimal Agent Checklist
+This is useful for:
 
-Before execution:
+- manual steering across several steps
+- exploratory work where you expect to intervene repeatedly
+- long-lived operator sessions
 
-- `ypi` available.
-- provider/model authenticated.
-- guardrails set for task size.
+But it should not be the primary form shown in the guide. For most agent use, `ypi "task"` is the better default.
 
-During execution:
+## 11. If You Use Interactive Mode, Prefer `tmux`
 
-- bounded prompts.
-- explicit output formats.
-- periodic cost/session checks.
+If you want interactive usage, run it inside `tmux`.
 
-Before completion:
+Example:
 
-- output validated.
-- integrated result summarized.
-- open risks listed.
+```bash
+tmux new -s ypi
+tmux send-keys -t ypi 'cd /path/to/repo && ypi' Enter
+```
+
+Why:
+
+- the session survives terminal disconnects
+- you can return to the same interactive root agent later
+- it is a cleaner operator workflow for long-running sessions
+
+For longer orchestrated runs, `Research/ypi/AGENTS.md` also documents `tmux` plus sentinel-file patterns.
+
+## 12. What The User Of `ypi` Should Care About
+
+As a CLI user, the important things are:
+
+- how to invoke `ypi`
+- when to use one-shot vs interactive mode
+- which flags you can pass
+- which environment variables control recursion behavior
+- how to set provider and model
+- how to run it safely with time, call, or budget limits
+
+You do not need to understand `ypi` internals to use the tool correctly.
+
+## 13. Minimal Cheat Sheet
+
+### Primary
+
+```bash
+ypi "task"
+```
+
+### Interactive
+
+```bash
+ypi
+```
+
+### Provider/model override
+
+```bash
+ypi --provider anthropic --model claude-sonnet-4-5-20250929 "task"
+```
+
+### Add extra instructions
+
+```bash
+ypi --append-system-prompt "extra instruction" "task"
+```
+
+### Guardrails
+
+```bash
+RLM_MAX_DEPTH=3 RLM_MAX_CALLS=20 RLM_TIMEOUT=1800 RLM_BUDGET=1.50 ypi "task"
+```
+
+### Interactive through `tmux`
+
+```bash
+tmux new -s ypi
+tmux send-keys -t ypi 'cd /path/to/repo && ypi' Enter
+```

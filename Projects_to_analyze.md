@@ -1,26 +1,44 @@
-# Projects to analyze
+# Projects to Analyze
 
-These two are particular because it's like the SOTA of agent harnesses, the idea is to analyze them and give a detailed view on how it works, particularly according to our features.
+## Goal
+
+Explore each project listed below to build a clear, actionable understanding of how it works — its architecture, capabilities, strengths, and limitations — **evaluated against the features and design goals defined in our `ORCHESTRATOR_PLANNING_PROMPT.md`**. Each analysis must answer the project-specific questions noted under its entry, and must cover all items in the analysis checklist below. The final output per project is a structured report that feeds directly into the Phase 0 synthesis step (see `ORCHESTRATOR_PLANNING_PROMPT.md` §12, Phase 0).
+
+---
+
+## Analysis Checklist
+
+Every project report must cover the following. This list is a **minimum** — include any other relevant findings that don't fit neatly into these categories:
+
+1. **Access to models/providers** — How does the project connect to LLMs? API keys, OAuth with existing subscriptions, CLI wrappers, or something else?
+2. **API structure / invocation method** — How are model calls made? (OpenAI-style, Anthropic-style, unified abstraction, etc.) Note provider-specific features supported (e.g., interleaved thinking with Claude, tool use, streaming).
+3. **Security and isolation** — Worktrees, sandboxing, container isolation, filesystem scoping, role-based access, tool restrictions.
+4. **Agent types and orchestration** — Predefined agent roles, how they coordinate (protocols, message passing, file-based, etc.), hierarchy structure.
+5. **Features aligned with our goals** — Noticeable features that match or overlap with what we want to build (see `ORCHESTRATOR_PLANNING_PROMPT.md` §3–§9).
+6. **Interesting unrelated features** — Capabilities not in our current plan but that could improve the system overall.
+7. **Project-specific focus areas** — Particular sections or topics highlighted per project (see entries below).
+8. **Limitations** — Known constraints, missing features, scalability concerns, design trade-offs.
+9. **Maintenance and practices** — Code quality, documentation, test coverage, activity level, community, contribution model.
+
+> **Important**: Where available, use **online documentation** to supplement the source code analysis. Many projects publish `llms.txt`, docs sites, blogs, or specs that provide authoritative context beyond what the repo alone reveals. When a `llms.txt` or docs URL is provided for a project, it **must** be fetched and incorporated into the analysis.
+
+---
+
+## SOTA Agent Harnesses
+
+These two are the state of the art in agent harnesses. They are analyzed separately because they serve as foundations or starting points rather than orchestrators — the focus is on understanding their capabilities for integration into our system.
 
 - https://github.com/openai/codex
-  Add web version through search using the llms.txt (https://developers.openai.com/codex/llms.txt). I think here we should focus on understanding how we can use non-interactive mode, if they manage any sort of worktrees, how they use skills and multiagents, etc.
+  Online docs: https://developers.openai.com/codex/llms.txt
+  Focus: non-interactive mode capabilities, worktree support, skills/extensions system, multi-agent features, how it can be driven programmatically.
 
 - https://github.com/anthropics/claude-code
-  Add web version through search using the llms.txt (https://code.claude.com/docs/llms.txt). I think here we should focus on understanding how we can use non-interactive mode (check if usable with plan or requires API key), if they manage any sort of worktrees, how they use skills and multiagents, etc. Create another file exclusively for the skills that might be useful for our project and needs.
+  Online docs: https://code.claude.com/docs/llms.txt
+  Focus: non-interactive mode (check if usable with a subscription plan or requires API key), worktree support, skills/extensions system, multi-agent features, MCP integration. **Additionally**: create a separate file listing skills that might be useful for our project and needs.
 
-Some things we need to check on every agent orchestrator project:
+---
 
-1. Access to models/providers (if API, OAUTH with suscriptions, etc)
-2. API structure or way to call models (OpenAI API style, Anthropic, etc). This is important considering different features like interleaved thinking with Claude.
-3. Security and Isolation (Worktrees, etc.).
-4. Types of predefined agents and orchestration between them (like use of some Protocol).
-5. Noticeable features that have similarities with the ones we desire.
-6. Interesting features not related but that could improve the system overall.
-7. Particular sections or topics highlighted for each project by us to analyze specifically, if any.
-8. Limitations 
-9. Maintenance, good practices in the project, etc.
-
-The "template" or guide for the final output should be flexible enough so that it can include any other relevant information not present in the list. 
+## Agent Orchestrators & Harnesses
 
 - https://github.com/badlogic/pi-mono | AI agent toolkit: coding agent CLI, unified LLM API, TUI & web UI libraries, Slack bot, vLLM pods. Most versatile, with the idea of code that builds itself (see agent-stuff repo for examples of extensions and skills that can be implemented). 
   This is the whole repo, but we will focus on packages/coding-agent. I really like the philosophy (check Pi-blog.md to read the , I think it's something that will evolve as models evolve. It's important to understand the different ways it has to expand itself and if it's possible to implement all our desired features or how can we expand it preserving the core ideas and philosophy. Here, I know we start in yolo mode so we'd need to add the security part too. I think this is a good base for something that can even self evolve.
@@ -33,7 +51,7 @@ The "template" or guide for the final output should be flexible enough so that i
 - https://github.com/Git-on-my-level/codex-autorunner | CAR provides a set of low-opinion agent coordination tools for you to run long complex implementations using the agents you already love. CAR is not a coding agent, it's a meta-harness for coding agents.
   What I like about this one is the simple ticket system. I want you to dig into this and explain advantages and possible limitations, and think about how we could incorporate it into our system.
 - https://github.com/njbrake/agent-of-empires | A terminal session manager for AI coding agents on Linux and macOS. Built on tmux, written in Rust. Run multiple AI agents in parallel across different branches of your codebase, each in its own isolated session with optional Docker sandboxing. 
-  I think this is an example of orchestratos based on tmux sessions to call each CLI, simple but somewhat effective. The possible limitations I see rn are that maybe it could be more difficult to trace everything and logging, but it's important to think deeply on the advantages and disadvantages this implementation has.
+  I think this is an example of orchestrator based on tmux sessions to call each CLI, simple but somewhat effective. The possible limitations I see rn are that maybe it could be more difficult to trace everything and logging, but it's important to think deeply on the advantages and disadvantages this implementation has.
 
 ## Particular cases
 
