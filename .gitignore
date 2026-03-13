@@ -1,1 +1,10 @@
-Research/
+# Ignore everything inside Research subdirectories
+Research/*/
+
+# But keep Research/*/output/ contents
+!Research/*/output/
+!Research/*/output/**
+
+# Keep specific files in Research subdirectories
+!Research/*/prompt.txt
+!Research/*/ANALYSIS_TASK_DETAILS.md
