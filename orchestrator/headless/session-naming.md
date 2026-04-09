@@ -6,15 +6,15 @@ All standard headless runs write their canonical JSONL log to the centralized ho
 ${P0_HOME:-$HOME/.p0}/sessions/{YYYY-MM-DD}/{name}.jsonl
 ```
 
-The path is intentionally outside individual project trees so sessions, conventions, and installed skills can live under one shared `~/.p0` home.
+The path is intentionally outside individual project trees so sessions, the orchestrator layer, and installed skills can live under one shared `~/.p0` home.
 
 ## Home Layout
 
 ```text
 ${P0_HOME:-$HOME/.p0}/
-├── conventions/headless/
-├── skills/
-├── sessions/
+├── orchestrator/headless/   Shared abstraction layer (scripts, templates, guides)
+├── skills/                  Harness-specific skills (each with its own launcher)
+├── sessions/                Centralized JSONL session logs
 └── install-backups/
 ```
 
@@ -69,7 +69,7 @@ These sidecars are produced by the shared launcher.
 For a normal headless run:
 
 1. Resolve the project root.
-2. Use the shared launcher or naming script under `${P0_HOME}/conventions/headless/scripts/`.
+2. Use the harness-specific launcher from the skill, or the shared naming script under `${P0_HOME}/orchestrator/headless/scripts/`.
 3. Let the script determine the session name and log path.
 4. Launch the harness.
 5. Keep stdout as pure JSONL and keep stderr outside the JSONL file.

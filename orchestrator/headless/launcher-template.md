@@ -10,12 +10,13 @@ Use the shared launcher stack when adding a new harness-specific headless workfl
 2. `scripts/p0-headless-session.sh`
    Harness-neutral session wrapper. It computes session metadata, creates the centralized paths, launches a command in the background, and prints standardized JSON metadata including the PID.
 
-3. Harness-specific launcher
+3. Harness-specific launcher (lives inside each skill, not in this shared folder)
    A small wrapper like `p0-launch-codex.sh` or `p0-launch-claude.sh` that:
+   - lives in `skills/general/<headless-skill>/scripts/`,
    - accepts harness-specific flags,
    - maps them onto the shared metadata inputs,
    - constructs the actual harness command,
-   - delegates the launch to `p0-headless-session.sh`.
+   - delegates the launch to `p0-headless-session.sh` via `$P0_HOME/orchestrator/headless/scripts/`.
 
 ## Standard Output Contract
 

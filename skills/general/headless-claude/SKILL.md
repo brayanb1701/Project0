@@ -1,6 +1,6 @@
 ---
 name: headless-claude
-description: Delegate a clearly defined task to an independent Claude Code session running headlessly via `claude -p`. Standard runs use full permissions plus access to `P0_HOME`, always write a centralized JSONL session log under `~/.p0/sessions/...`, and should use internal sub-agents when the task is decomposable.
+description: Delegate a clearly defined task to an independent Claude Code session running headlessly via `claude -p`. Standard runs use full permissions plus access to `P0_HOME` and always write a centralized JSONL session log under `~/.p0/sessions/...`.
 allowed-tools: Bash
 ---
 
@@ -21,8 +21,37 @@ Use this skill when:
 - Standard Claude runs always emit a JSONL event log with `--output-format stream-json --verbose`.
 - Standard Claude runs always save that JSONL log under `${P0_HOME:-$HOME/.p0}/sessions/{YYYY-MM-DD}/{name}.jsonl`.
 - Session names must include the project code.
-- Never invent the session filename or log path manually. Use `${P0_HOME:-$HOME/.p0}/conventions/headless/scripts/p0-launch-claude.sh`.
+- Never invent the session filename or log path manually. Use this skill's launcher script.
+- The launcher delegates to the shared orchestrator scripts at `${P0_HOME}/orchestrator/headless/scripts/`.
 - The detailed reference files in this skill remain available for future specialized variants, but they are not part of the standard launch flow.
+
+## Launching a session
+
+The launcher script handles all the complexity: project root detection, session naming, path creation, environment setup, and the actual `claude -p` invocation. The model should call the script, not reconstruct the command manually.
+
+**Minimal invocation** (uses defaults: model=claude-sonnet-4-6, effort=high, attempt=01, project-root=auto-detected):
+
+```bash
+"${P0_HOME:-$HOME/.p0}/skills/claude/headless-claude/scripts/p0-launch-claude.sh" \
+  --prompt-file /path/to/prompt.md \
+  --task analysis
+```
+
+**Full invocation** (all flags explicit):
+
+```bash
+"${P0_HOME:-$HOME/.p0}/skills/claude/headless-claude/scripts/p0-launch-claude.sh" \
+  --prompt-file /path/to/prompt.md \
+  --task refactor-auth \
+  --model claude-opus-4-6 \
+  --effort high \
+  --attempt 02 \
+  --project-root /path/to/project \
+  --project-code myproj
+```
+
+The launcher prints JSON metadata including `session_name`, `pid`, `jsonl_path`, `stderr_path`, and `project_code`.
+Use `${P0_HOME}/orchestrator/headless/templates/headless-launch-response.md` when reporting the launched session back to the user.
 
 ## Bigger-picture principle
 
@@ -36,49 +65,32 @@ A headless session starts without the parent conversation's context. Before the 
 
 Keep this brief short and stable. It aligns the child session and also helps prompt caching when multiple related sessions share the same prefix.
 
-Use `${P0_HOME:-$HOME/.p0}/conventions/headless/templates/headless-mission-context.md` as the shared prompt skeleton when helpful.
+Use `${P0_HOME:-$HOME/.p0}/orchestrator/headless/templates/headless-mission-context.md` as the shared prompt skeleton when helpful.
 
 ## Working method
 
-1. Confirm the project root, prompt contents, expected outputs, task slug, model, effort, and attempt number.
-2. Let the shared Claude launcher resolve the project code, session name, JSONL path, and stderr sidecar path.
-3. If launching from inside a Claude Code session, unset `CLAUDECODE` before starting the child.
-4. If the prompt is large or reusable, store it in a file instead of inlining it.
-5. Launch `claude -p` from the project root with full permissions and centralized logging.
-6. If the task is decomposable, explicitly instruct the session to use sub-agents and give each child a narrow scope plus a compact bigger-picture brief.
-7. After launch or completion, verify that the JSONL log exists at the generated path.
+1. Confirm the prompt contents, expected outputs, and task slug. Model, effort, and attempt have sensible defaults.
+2. Write the prompt to a file if it's non-trivial (rather than inlining it).
+3. Call the launcher script. It resolves everything else automatically.
+4. If launching from inside a Claude Code session, the launcher already unsets `CLAUDECODE`.
+5. After launch, verify the JSONL log exists at the path reported in the JSON output.
 
-## Sub-agent guidance
+## Sub-agent guidance (experimental)
 
-When the task has multiple independent tracks, tell the Claude session to use the Agent tool rather than doing everything in the main thread.
+> **Status: experimental.** In practice, models sometimes abandon subagents that take too long and redo the work themselves, duplicating labor and creating noise instead of helping. Only use subagents when the task has clearly independent, well-bounded subtasks.
 
-Ask the parent session to:
-- size the work first,
-- split independent tracks,
-- run them in parallel when helpful,
-- synthesize and validate returned results,
-- keep the main thread focused on orchestration.
+When the task has **clearly separable, independent tracks** where each track has its own inputs and outputs, you may instruct the Claude session to use the Agent tool. This works best when:
+- tracks do not depend on each other's results,
+- each track can be described in a self-contained paragraph,
+- the total number of tracks is small (2-4).
 
-## Standard launch template
+If the task is sequential, has shared state, or is ambiguous about how to split, **do not use subagents** — let the session work through it linearly.
 
-```bash
-project_root=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
-p0_home="${P0_HOME:-$HOME/.p0}"
-launcher="$p0_home/conventions/headless/scripts/p0-launch-claude.sh"
-prompt_file="/abs/path/to/prompt.md"
-
-P0_HOME="$p0_home" \
-"$launcher" \
-  --prompt-file "$prompt_file" \
-  --model claude-sonnet-4-6 \
-  --effort high \
-  --task analysis \
-  --attempt 01 \
-  --project-root "$project_root"
-```
-
-The launcher prints JSON metadata including `session_name`, `pid`, `jsonl_path`, `stderr_path`, and `project_code`.
-Use `${P0_HOME:-$HOME/.p0}/conventions/headless/templates/headless-launch-response.md` when reporting the launched session back to the user.
+When using subagents, ask the parent session to:
+- size the work first and confirm the split is clean,
+- give each child a narrow scope plus a compact bigger-picture brief,
+- wait for all children to complete before synthesizing,
+- validate returned results before producing final output.
 
 ## Prompt-shaping rules
 
@@ -88,8 +100,7 @@ When writing the delegated prompt:
 - state the exact output files or deliverables,
 - require evidence-backed findings,
 - require separation of confirmed facts from inferences,
-- require an explicit final recommendation or decision output,
-- require sub-agent usage when the task naturally decomposes.
+- require an explicit final recommendation or decision output.
 
 ## Monitoring and resuming
 
@@ -116,5 +127,6 @@ These are for future specialized skills or more custom launch shapes. They are n
 
 - This skill assumes the shared `~/.p0` home has been installed with `install.sh`.
 - Standard non-interactive Claude runs should keep session persistence enabled, since the JSONL log and resume path are both useful.
-- The shared naming/storage convention lives in `${P0_HOME:-$HOME/.p0}/conventions/headless/session-naming.md`.
-- The standard harness wrapper lives at `${P0_HOME:-$HOME/.p0}/conventions/headless/scripts/p0-launch-claude.sh`.
+- The shared naming/storage convention lives in `${P0_HOME}/orchestrator/headless/session-naming.md`.
+- The harness-specific launcher lives at `scripts/p0-launch-claude.sh` inside this skill.
+- The shared orchestrator scripts live at `${P0_HOME}/orchestrator/headless/scripts/`.

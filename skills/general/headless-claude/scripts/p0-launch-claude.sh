@@ -3,8 +3,8 @@
 
 set -euo pipefail
 
-SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
-SESSION_SCRIPT="$SCRIPT_DIR/p0-headless-session.sh"
+P0_HOME="${P0_HOME:-$HOME/.p0}"
+SESSION_SCRIPT="$P0_HOME/orchestrator/headless/scripts/p0-headless-session.sh"
 
 usage() {
   cat <<'EOF'

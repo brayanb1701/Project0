@@ -42,20 +42,24 @@ ensure_linked_root() {
 mkdir -p \
   "$p0_home/skills/codex" \
   "$p0_home/skills/claude" \
-  "$p0_home/conventions/headless" \
+  "$p0_home/orchestrator/headless" \
   "$p0_home/sessions" \
   "$p0_home/install-backups"
 
+# Shared orchestrator layer (templates, shared scripts, guides)
+copy_dir "$repo_root/orchestrator" "$p0_home/orchestrator"
+
+# Harness-specific skills (each includes its own launcher script)
 copy_dir "$repo_root/skills/general/headless-codex" "$p0_home/skills/codex/headless-codex"
 copy_dir "$repo_root/skills/general/headless-claude" "$p0_home/skills/claude/headless-claude"
-copy_dir "$repo_root/conventions/headless" "$p0_home/conventions/headless"
+copy_dir "$repo_root/skills/general/knowledge-condenser" "$p0_home/skills/claude/knowledge-condenser"
 
 chmod +x \
-  "$p0_home/conventions/headless/scripts/p0-headless-lib.sh" \
-  "$p0_home/conventions/headless/scripts/p0-session-name.sh" \
-  "$p0_home/conventions/headless/scripts/p0-headless-session.sh" \
-  "$p0_home/conventions/headless/scripts/p0-launch-codex.sh" \
-  "$p0_home/conventions/headless/scripts/p0-launch-claude.sh"
+  "$p0_home/orchestrator/headless/scripts/p0-headless-lib.sh" \
+  "$p0_home/orchestrator/headless/scripts/p0-session-name.sh" \
+  "$p0_home/orchestrator/headless/scripts/p0-headless-session.sh" \
+  "$p0_home/skills/codex/headless-codex/scripts/p0-launch-codex.sh" \
+  "$p0_home/skills/claude/headless-claude/scripts/p0-launch-claude.sh"
 
 # Codex official user skill root per docs: $HOME/.agents/skills
 ensure_linked_root "$p0_home/skills/codex" "$HOME/.agents/skills"
@@ -64,19 +68,27 @@ ensure_linked_root "$p0_home/skills/codex" "$HOME/.agents/skills"
 ensure_linked_root "$p0_home/skills/claude" "$HOME/.claude/skills"
 
 cat <<EOF
-Installed centralized headless assets into:
+Installed P0 orchestrator assets into:
   $p0_home
+
+Directory layout:
+  $p0_home/orchestrator/         Shared foundation (headless scripts, templates, guides)
+  $p0_home/skills/codex/         Codex-specific skills (each with its own launcher)
+  $p0_home/skills/claude/        Claude-specific skills (each with its own launcher)
+  $p0_home/sessions/             Centralized session logs
 
 Skill roots:
   Codex  -> $HOME/.agents/skills -> $p0_home/skills/codex
   Claude -> $HOME/.claude/skills -> $p0_home/skills/claude
 
 Important notes:
-- Codex docs do not expose a config key to replace the user skill root. This installer uses the official user skill path with a symlink back to ~/.p0.
-- Claude docs likewise use the official user scope under ~/.claude. This installer uses that path with a symlink back to ~/.p0.
-- Codex repo-local .agents/skills still outrank user-level skills. This installer centralizes the user layer, but does not invert that documented precedence.
-- Shared headless conventions live in:
-  $p0_home/conventions/headless
+- Codex repo-local .agents/skills still outrank user-level skills.
+  This installer centralizes the user layer but does not invert that precedence.
+- Shared headless orchestrator assets live in:
+  $p0_home/orchestrator/headless
+- Harness-specific launchers live inside each skill:
+  $p0_home/skills/codex/headless-codex/scripts/p0-launch-codex.sh
+  $p0_home/skills/claude/headless-claude/scripts/p0-launch-claude.sh
 - Centralized sessions live in:
   $p0_home/sessions
 - Restart Codex and Claude Code after installation so they rescan skills.
