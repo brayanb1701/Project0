@@ -165,6 +165,13 @@ Quick reference for filling the template. Each entry lists the category, descrip
 - **Focus**: How ypi builds on Pi agent — which parts of Pi does it use, modify, or bypass? Does it respect Pi's philosophy or diverge? Detail the recursive implementation: how are rlm_query calls structured, what controls recursion depth/width, how is context managed across recursive levels? Compare the implementation against the original RLM paper to identify any relevant differences in approach.
 - **Deliverables**: None beyond the standard report.
 
+### opencode
+- **Category**: SOTA Agent Harness
+- **URL**: https://github.com/anomalyco/opencode
+- **Docs**: https://opencode.ai/docs
+- **Focus**: Client/server architecture — how does headless operation work, what is the server API, and how can multiple clients connect? Provider-agnostic model access — how is the abstraction layer structured? Agent system — how do build/plan agents work, what is the @general subagent mechanism? Skills/extensions/plugins system — how are they defined, loaded, and managed? SDK and plugin architecture — how extensible is the system programmatically? MCP and ACP support — what protocols are supported and how? LSP integration — how is it implemented? CLI non-interactive mode — how can it be driven programmatically? Permissions model — how are tool access and filesystem scope controlled? Evaluate as a potential base or integration candidate.
+- **Deliverables**: None beyond the standard report.
+
 ---
 
 ## Worked Example: ypi

@@ -36,6 +36,10 @@ These two are the state of the art in agent harnesses. They are analyzed separat
   Online docs: https://code.claude.com/docs/llms.txt
   Focus: non-interactive mode (check if usable with a subscription plan or requires API key), worktree support, skills/extensions system, multi-agent features, MCP integration. **Additionally**: create a separate file listing skills that might be useful for our project and needs.
 
+- https://github.com/anomalyco/opencode
+  Online docs: https://opencode.ai/docs
+  Focus: client/server architecture (headless operation, multi-client potential), provider-agnostic model access, agent system (build/plan agents + @general subagent), skills/extensions/plugins system, SDK and plugin architecture, MCP/ACP support, LSP integration, CLI non-interactive mode, permissions model. Evaluate as a potential base or integration candidate given its open-source nature and TypeScript codebase.
+
 ---
 
 ## Agent Orchestrators & Harnesses
