@@ -20,6 +20,8 @@ Stop design drift by freezing the minimum contracts for v0.
 4. `docs/v0/BACKEND_CONTRACT.md`
 5. `docs/v0/WORKFLOW_CONTRACT.md`
 
+**(COMMENT: I think this might change based on other feedback)**
+
 ### Questions to lock now
 - Are the canonical roles exactly:
   - Planner
@@ -28,9 +30,20 @@ Stop design drift by freezing the minimum contracts for v0.
   - Worker
   - Reviewer
   - Researcher
+  
+  **(ANSWER: I'm even thinking now that we still need to separate the planner into two based on if it's about a whole new project or adding a feature to an existing one because their scope are too different. Maybe we could just have a way to point the agent to the appropriate context/information/docs to know how to do for each one (maybe using skills?). So, it depends, we can start with these roles if there's a clear way to separate that for those two cases.)**
+  
 - Are code-writing tasks always worktree-isolated in v0?
+
+  **(ANSWER: Yes, I agree with that)**
+
 - Is web search deferred from the main coding loop for v0?
+
+  **(ANSWER: Yes)**
+
 - Is the first end-to-end demo a single feature in Project0 itself?
+
+  **(ANSWER: As mentioned in other parts of feedback, the first end-to-end demos will be Knowledge Base project, and Project0 itself)**
 
 ### What not to debate in this iteration
 - personal assistant features
@@ -46,6 +59,8 @@ Stop design drift by freezing the minimum contracts for v0.
 Make task routing structural instead of prompt-implied.
 
 ### Files to define
+
+**(COMMENT: It's important to keep in mind that whatever data can be filled deterministically by the orchestration layer, should be done and not left to the model, like ids.)**
 
 #### 1. `FEATURE_SPEC.md`
 Purpose:
@@ -173,6 +188,8 @@ class BackendAdapter:
 ### Optional third adapter
 - `cursor_cli` or `opencode`
 - only after the first two work
+
+**(COMMENT: As we can do the research for each adapter in parallel, I decided to include pi and opencode)**
 
 ## Iteration D — Implement the session/archive layout
 
@@ -428,6 +445,7 @@ That will speed us up a lot.
 | Architect separate or folded? | **Separate.** Keep distinct even if folded for small projects in practice. | Foundation doc (unchanged) |
 
 **Still open:**
+
 - First demo task selection (reframe per C-2 and C-17)
 - Third experimental backend (Cursor vs OpenCode)
 - Skill resolution ownership (Q-1)

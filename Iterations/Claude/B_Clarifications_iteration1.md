@@ -27,4 +27,4 @@
    - **FREEZE — Cost optimization as first-class concern.** Deferred until the system works end-to-end.
    - **REJECT — Claude's own recommendations (§4).** Specifically: roles will not be merged; the `.p0/` layout will not be emergent — it needs an intentional starting point to iterate from; the implementation language is Python from the start, no Makefile/Justfile intermediate; and `DECISIONS.md` is an append-only log for agent sessions, not for the human design decisions being made during iterations.
 
-2. 
+2. analysis_backlog_and_next_steps.md | Iterations/Brayan/p0_B_iteration1_backlog_and_next_steps.md

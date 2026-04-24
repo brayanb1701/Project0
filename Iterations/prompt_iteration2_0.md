@@ -1,10 +1,10 @@
 1. I've advanced in organizing a little the structure to save all the documents created through this iterative process. We have a folder Iterations, inside we have three folders: Brayan, Claude, Oracle (you), and there will live the prompt_iteration#_#.md files. This is the first one because this is like a draft made by me, but then we will refine and even finish with a couple different prompts for a certain iteration to parallelize work from the oracle. Inside the Oracle folder we have the files you gave me as response and the response itself. With this, I will use Claude to have another opinion on their thoughts and responses to continue the process as if it were the user; at the same time I will review each document and add a section a the end of each one with my feedback, and then I'll cross this with what Claude did to complement this. After this, I create the prompt for the next iteration (like this file), and refine it with the help of Claude to make sure it follows your suggestions and is clear enough.  
 
-  You can also give suggestions on how could we improve the structure of the files for the iteration process.
+     You can also give suggestions on how could we improve the structure of the files for the iteration process.
 
-I'm documenting all my process here, so that the next session with the Oracle has a report of everything we've considered in this process to have a full picture.
+     I'm documenting all my process here, so that the next session with the Oracle has a report of everything we've considered in this process to have a full picture.
 
-
+2. When there's something I'm not sure or don't know how to do it, maybe I can mention some options, what I expect as a feedback are like pros/cons of each option, as well as present any other valid option, specially if it could be better than what I mention. With that, I can select something. This applies for any iteration process with any agent where there's clarification needed. **(TODO: we need to include this as Brayan feedback in the appropriate p0_B_iteration1_*.md file)**
 
 ## Tasks I want the oracle to do
 
@@ -18,89 +18,49 @@ I'm documenting all my process here, so that the next session with the Oracle ha
 
    ---
 
-   ### Prompt for the Oracle: Structured Principles Extraction from Agents_Foundations
+   ### Summary: What was done (completed across two iterations)
 
-   You are given a set of files, which includes articles, notes, condensed documents, and guides covering topics like harness engineering, agent-oriented thinking, prompt caching, context engineering, skills design, prompting practices, and architecture principles — all related to building software with and for LLM coding agents.
+   The oracle processed all 12+ source files from `Agents_Foundations/` (articles, notes, condensed docs, and user-refined syntheses on harness engineering, agent-oriented thinking, prompt caching, context engineering, skills design, and architecture principles). The original source files were moved to `Agents_Foundations/Original/`.
 
-   Some of these documents have already been individually condensed using the methodology in `knowledge_extraction_prompt.md` (files ending in `.condensed.md`), or another version of it (maybe more general). These condensed versions serve as examples of the extraction style (P/E/A tagging, theme grouping, anti-patterns). Evaluate them: are they good enough? Do they capture everything? Would you restructure them?
+   **Iteration 1** produced an initial extraction using the `knowledge_extraction_prompt.md` methodology (P/E/A tagging, theme grouping, anti-patterns). It generated principle files grouped by domain, a traceability mapping, and a review of existing condensed files.
 
-   **Your objectives:**
+   **Iteration 2 (corrections)** addressed structural issues from v1:
+   - Separated **source-local condensation** (compressing a single doc) from **cross-source invariant synthesis** (extracting stable truths across all sources) — v1 had conflated the two.
+   - Made **source weighting explicit** via a source register (`methodology/source_register.md`) with four tiers: primary sources, user-refined syntheses, source-local condensations, and notes/fragments.
+   - Separated **stable principles** (invariant layer) from **evolving workflows** (playbook layer) — v1 had presented workflow habits as if they were timeless invariants.
+   - Treated **traceability as best-effort** rather than claiming perfect proof of coverage.
 
-   #### 1. Understand the extraction methodology
-   Read `knowledge_extraction_prompt.md` carefully. This defines an initial idea on how we extract principles (`P`), implementation examples (`E`), and agent-specific considerations (`A`) from source material. Analyze this methodology to serve as a base for you to decide your own.
+   **Final output structure** (what we use going forward — `principles/` and `playbooks/`):
 
-   #### 2. Extract and structure ALL principles, rules, and facts across every file
-   Process every file (not just the ones that already have condensed versions). Extract every distinct principle, rule, fact, and actionable insight. Remember: condensing means fewer words, not fewer ideas — nothing should be silently dropped.
+   | File | Scope |
+   |---|---|
+   | `principles/01_agent_operating_invariants.md` | Cross-cutting defaults for agent-oriented work: cold-start, context scarcity, explicitness, enforcement, drift, and meta-rules about invariants themselves. 14 tagged invariants. |
+   | `principles/02_repository_architecture_modularity_and_control.md` | Repo as system of record, modularity, layered complexity, legibility, validation, control vs. throughput, entropy management. 19 tagged invariants. |
+   | `principles/03_harness_context_skills_and_verification.md` | Runtime design: harness engineering, context control via subagents, tools/skills/MCP, hooks, deterministic control flow, verification and back-pressure. 19 tagged invariants. |
+   | `principles/04_prompt_caching_and_prefix_stability.md` | Provider-specific (Anthropic prefix caching): prefix stability, session discipline, feature design around cache, monitoring. 12 tagged invariants. |
+   | `playbooks/01_workflow_research_planning_and_review.md` | Evolving best-known workflow patterns: research->plan->implement flow, context handling, human leverage, task selection, risk-based supervision. 14 tagged defaults. |
 
-   #### 3. Decide the best structure for organizing the extracted knowledge
-   Don't just produce one flat file. Decide the optimal way to organize the extracted principles into separate files (and folders/subfolders if warranted). Group by domain/purpose, not by source document. For example, you might end up with something like:
+   Each principle uses status markers (`[Core]`, `[Default]`, `[Conditional]`, `[Experimental]`) and the P/E/A legend. Each file ends with an anti-patterns section.
 
-   - Principles that apply to **all agent-built projects** (repo structure, legibility, documentation, entropy management, etc.)
-   - Principles that **coding agents should always follow** (context management, progressive disclosure, tool use, error handling, prompt design, etc.)
-   - Principles for **the iterative design/research process itself** (how to run experiments, evaluate, refine, etc.)
-   - Principles for **harness/orchestrator design** (agent coordination, feedback loops, autonomy escalation, etc.)
-   - Principles for **prompt engineering and caching** (token efficiency, cache-aware design, system prompt structure, etc.)
+   **Supporting methodology files** (for reference, not for daily use):
+   - `methodology/source_weighting_and_output_contract.md` — authority tiers and conflict handling rules
+   - `methodology/source_register.md` — weight assigned to each source file
+   - `methodology/traceability_best_effort_note.md` — honest framing of traceability limits
+   - `prompts/` — the two-stage extraction prompts (source condensation + cross-source synthesis)
+   - `reviews/derived_and_condensed_files_review_v2.md` — verdict on each existing condensed/derived file
+   - `migration_v1_to_v2.md` — maps v1 files to their v2 successors
 
-   These are suggestions — you decide the actual structure based on what emerges from the material. Follow the same principles you extract (e.g., if the documents say "group by theme not by source," do that). Explain your reasoning for the structure you chose.
-
-   #### 4. Evaluate existing condensed files
-   For files that already have a `.condensed.md` version, compare your extraction against the existing condensed version. Note what was missed, what was over-summarized, and whether the condensed version is sufficient or needs to be replaced by your version.
-
-   #### 5. Produce a traceability mapping
-   This is critical. In a separate file (e.g., `principles_traceability.md`), produce a mapping that shows:
-   - Each principle/rule/fact you extracted
-   - Which source file(s) it came from (with enough specificity to locate it — section name or a short quote if needed)
-   - Which output file you placed it in
-
-   This mapping lets us verify that every idea from every source file was considered and nothing was lost. Format it as a table or structured list — whatever is most scannable.
-
-   #### 6. Report on coverage gaps and cross-cutting themes
-   In your response (not in the output files), include:
-   - A list of any source files where content felt thin, redundant, or contradictory with other sources
-   
-   - Cross-cutting themes that appeared in 3+ source files (these are likely the most important principles)
-   
-   - Any principles that conflicted between sources, and how you resolved the conflict
-   
-   - Your assessment of the existing condensed files — keep, replace, or merge?
-   
-     **Files you will receive:**
-   
-     All files inside `Agents_Foundations/`:
-   
-   - `knowledge_extraction_prompt.md` — the extraction methodology itself (as an example)
-   
-   - `Harness_Engineering.md` + `Harness_Engineering.condensed.md`
-   
-   - `Harness_Eng_HumanLayer.md`
-   
-   - `Agent_Oriented_Thinking.md`
-   
-   - `Agent_Project_Principles.md`
-   
-   - `Architecture_Doc_Principles.md`
-   
-   - `Prompt Caching is Everything.md` + `Prompt Caching is Everything.condensed.md`
-   
-   - `Skills_Use_Anthropic_engineer.md` + `Skills_Use_Anthropic_engineer.condensed.md`
-   
-   - `ace-fca.md`
-   
-   - `AI-Engineer-Conference-EU-0426.md`
-   
-   - `Dex Process on coding with agents.md`
-   
-   - `Manage_Context_Window_DanielGriesser.md`
-   
-   **Output:** The structured principle files (following the P/E/A format), the traceability mapping file, and your analysis/recommendations in your response text.
-   
    ---
-
-​	
 
 
 
 3. Related to the previous task, I think we really need to advance parallel with an initial version of the knowledge base. I think this is the perfect kind of project to take as test, besides it's something that can improve our system by a lot if implemented correctly. And I had another idea, I will take 3-4 of the original orchestrator projects (the ones that use codex, claude code or their subscriptions like agent-orchestrator) I explored initially, I'll install them and adapt the knowledge base project with each one adapting our requirements to how each one treats tasks (handling gh issues, using linear/jira, etc.). We will use like the default configuration for each one, let them build the knowledge base system, and then compare the results between them, which will allow us to detect common issues on using this type of software, to be aware of them while building our own system. We'll do this right after we have the initial version of contracts, formats, etc. Particularly, using the format and instructions for the project level planner.
+
+4. In general and related to the previous, I think we can use the Oracle to define all the necessary documents, plans, technical files, etc. to serve as the base for the Knowledge_Base, the first and second version of the orchestrator (the second version I decided to do it on pi to have much more fine control on context, skills, etc. more on this later) So, basically we can do this in parallel requests to the Oracle (we don't have a limit of requests) and it can create all the corresponding documents and files based on the same workflow, contracts, etc. we will already have defined. In that way, for each case I'll be reviewing and making corrections to then start with each one in an appropriate order. This way, we will also be able to maximize the benefits of the oracle to have strong foundations from the beginning. And while I test version 1, I'll save time refining version 2 documents to its final form.
+
+   Just to clarify, even if we use the Oracle as the main planner for almost every step, in the orchestration layer we still define Claude to do this for the first version.
+
+   The idea is also that maybe we first adapt pi as one the harnesses of the first version, so that I still can understand and learn about pi and we advance through configuring some things associated with pi, to then try to do everything with pi as the base while leaving Claude (through claude code) more and more to just only one role (if still necessary because for sure I think other models like GPT can do this with good prompting and clear instructions) of being just like a co-reviewer and refiner/clarifier of my ideas, which it's how I'm using it currently.
 
 
 
